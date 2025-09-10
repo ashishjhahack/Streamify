@@ -1,6 +1,6 @@
 <h1 align="center">✨ Fullstack Chat & Video Calling App ✨</h1>
 
-![Demo App](https://github.com/ashishjhahack/Streamify/blob/main/src/assets/readme-img.png)
+![Demo App](https://github.com/ashishjhahack/Streamify/blob/main/frontend/src/assets/readme-img.png)
 
 Highlights:
 
