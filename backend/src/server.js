@@ -2,46 +2,49 @@ import express from "express";
 import "dotenv/config";
 import cookieParser from "cookie-parser";
 import cors from "cors";
-import path from "path";    // it is coming from node.js
-// import { fileURLToPath } from "url";
+import path from "path";
+import { fileURLToPath } from "url";
 
 import { connectDB } from "./lib/db.js";
-import  authRoutes  from "./routes/auth.route.js";
-import  chatRoutes  from "./routes/chat.route.js";
-import  userRoutes  from "./routes/user.route.js";
-
+import authRoutes from "./routes/auth.route.js";
+import chatRoutes from "./routes/chat.route.js";
+import userRoutes from "./routes/user.route.js";
 
 const app = express();
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 5000;
 
-const __dirname = path.resolve();   // this is used to get the current directory name. if we don't use this, the path will be relative to the current file, not the root directory
+// Needed for __dirname in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-// in ES moduler __dirname is not defined by default
-// const __filename = fileURLToPath(import.meta.url); // Required in ES Modules
-// const __dirname = path.dirname(__filename);        // Required in ES Modules
+// Middlewares
+app.use(
+  cors({
+    origin: "http://localhost:5173", // change this in production
+    credentials: true,
+  })
+);
+app.use(express.json());
+app.use(cookieParser());
 
-app.use(cors({
-    origin: "http://localhost:5173",
-    credentials: true, // allow cookies to be sent with requests
-}))
-
-app.use(express.json());  // to parse JSON bodies {email, password, ...}
-app.use(cookieParser()); // to parse cookies
-
-if(process.env.NODE_ENV === "production"){
-    app.use(express.static(path.join(__dirname, "../frontend/dist")));
-
-    app.get("/*splat", (req, res) => {
-        res.sendFile(path.join(__dirname, "../frontend", "dist", "index.html"));
-    })
-}
-
-// Routes
+// API routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/chat", chatRoutes);
 
+// ✅ Serve frontend in production
+if (process.env.NODE_ENV === "production") {
+  const frontendPath = path.join(__dirname, "../../frontend/dist");
+  app.use(express.static(frontendPath));
+
+  // Express 5: use regex instead of "*"
+  app.get(/.*/, (req, res) => {
+    res.sendFile(path.join(frontendPath, "index.html"));
+  });
+}
+
+// Start server
 app.listen(PORT, () => {
-    console.log(`server is listening on ${PORT}`)
-    connectDB();
+  console.log(`✅ Server running on port ${PORT}`);
+  connectDB();
 });
